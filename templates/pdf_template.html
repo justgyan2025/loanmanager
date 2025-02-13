@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Loan Report - {{ borrower.first_name }} {{ borrower.last_name }}</title>
+</head>
+<body>
+    <h1>Loan Report</h1>
+    
+    <!-- Borrower Information -->
+    <h2>Borrower Details</h2>
+    <table>
+        <tr>
+            <th>Name</th>
+            <td>{{ borrower.first_name }} {{ borrower.last_name }}</td>
+        </tr>
+        <tr>
+            <th>Address</th>
+            <td>{{ borrower.address or 'Not provided' }}</td>
+        </tr>
+    </table>
+
+    <!-- Loans Summary -->
+    {% for summary in loan_summaries %}
+    <h2>Loan #{{ summary.loan.id }}</h2>
+    <table>
+        <tr>
+            <th>Loan Amount</th>
+            <td>₹{{ "%.2f"|format(summary.loan.amount) }}</td>
+            <th>Interest Rate</th>
+            <td>{{ "%.1f"|format(summary.loan.interest_rate) }}%</td>
+        </tr>
+        <tr>
+            <th>Term</th>
+            <td>{{ summary.loan.term_months }} months</td>
+            <th>Monthly EMI</th>
+            <td>₹{{ "%.2f"|format(summary.loan.monthly_emi) }}</td>
+        </tr>
+        <tr>
+            <th>Status</th>
+            <td colspan="3">
+                <span class="status-badge status-{{ summary.loan.status.lower() }}">
+                    {{ summary.loan.status }}
+                </span>
+            </td>
+        </tr>
+    </table>
+
+    <h3>Payment Summary</h3>
+    <table>
+        <tr>
+            <th>Principal Paid</th>
+            <td>₹{{ "%.2f"|format(summary.principal_paid) }}</td>
+            <th>Interest Paid</th>
+            <td>₹{{ "%.2f"|format(summary.interest_paid) }}</td>
+        </tr>
+        <tr>
+            <th>Penalty Paid</th>
+            <td>₹{{ "%.2f"|format(summary.penalty_paid) }}</td>
+            <th>Total Paid</th>
+            <td>₹{{ "%.2f"|format(summary.total_paid) }}</td>
+        </tr>
+    </table>
+
+    <h3>Payment History</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for payment in summary.loan.payments %}
+            <tr>
+                <td>{{ payment.payment_date.strftime('%Y-%m-%d') }}</td>
+                <td>₹{{ "%.2f"|format(payment.amount) }}</td>
+                <td>{{ payment.payment_type }}</td>
+                <td>{{ payment.status }}</td>
+                <td>{{ payment.notes or '-' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" style="text-align: center">No payments recorded yet</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endfor %}
+</body>
+</html> 

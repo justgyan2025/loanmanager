@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}Loan Details{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-3xl mx-auto">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6">Loan Details</h2>
+            
+            <!-- Borrower Details Section -->
+            <div class="mb-8">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Borrower Information</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded-lg">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Borrower Name</p>
+                        <p class="mt-1 text-lg text-gray-900">{{ loan.borrower.first_name }} {{ loan.borrower.last_name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Email</p>
+                        <p class="mt-1 text-lg text-gray-900">{{ loan.borrower.email }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Phone</p>
+                        <p class="mt-1 text-lg text-gray-900">{{ loan.borrower.phone or 'Not provided' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Address</p>
+                        <p class="mt-1 text-lg text-gray-900">{{ loan.borrower.address or 'Not provided' }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- All Loans Section -->
+            <div class="mb-8">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">All Loans</h3>
+                    <a href="{{ url_for('export_borrower_loans_csv', borrower_id=loan.borrower.id, share_token=share_token) }}" 
+                       class="btn-animate inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Export All Loans
+                    </a>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Loan ID</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Interest Rate</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Term</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for borrower_loan in loan.borrower.loans %}
+                            <tr class="{% if borrower_loan.id == loan.id %}bg-indigo-50{% endif %}">
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ borrower_loan.id }}</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">₹{{ "%.2f"|format(borrower_loan.amount) }}</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ "%.1f"|format(borrower_loan.interest_rate) }}%</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ borrower_loan.term_months }} months</td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        {% if borrower_loan.status == 'ACTIVE' %}
+                                            bg-green-100 text-green-800
+                                        {% elif borrower_loan.status == 'PENDING' %}
+                                            bg-yellow-100 text-yellow-800
+                                        {% elif borrower_loan.status == 'COMPLETED' %}
+                                            bg-blue-100 text-blue-800
+                                        {% else %}
+                                            bg-red-100 text-red-800
+                                        {% endif %}">
+                                        {{ borrower_loan.status }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm">
+                                    {% if borrower_loan.id != loan.id %}
+                                    <a href="{{ url_for('public_loan_view', loan_id=borrower_loan.id, share_token=borrower_loan.share_token) }}" 
+                                       class="text-indigo-600 hover:text-indigo-900">View Details</a>
+                                    {% else %}
+                                    <span class="text-gray-500">Current Loan</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Current Loan Details Section -->
+            <div class="mb-8">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Current Loan Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Loan Amount</p>
+                        <p class="mt-1 text-lg text-gray-900">₹{{ "%.2f"|format(loan.amount) }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Interest Rate</p>
+                        <p class="mt-1 text-lg text-gray-900">{{ "%.1f"|format(loan.interest_rate) }}%</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Term (Months)</p>
+                        <p class="mt-1 text-lg text-gray-900">{{ loan.term_months }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Monthly EMI</p>
+                        <p class="mt-1 text-lg text-gray-900">₹{{ "%.2f"|format(loan.monthly_emi) }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Status</p>
+                        <p class="mt-1">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                {% if loan.status == 'ACTIVE' %}
+                                    bg-green-100 text-green-800
+                                {% elif loan.status == 'PENDING' %}
+                                    bg-yellow-100 text-yellow-800
+                                {% else %}
+                                    bg-gray-100 text-gray-800
+                                {% endif %}">
+                                {{ loan.status }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Summary Cards -->
+            <div class="mb-8">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Payment Summary</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <p class="text-sm text-gray-500">Total Principal Paid</p>
+                        <p class="text-lg font-semibold text-blue-600">
+                            ₹{{ "%.2f"|format(loan.payments|selectattr('payment_type', 'equalto', 'PRINCIPAL')|sum(attribute='amount')) }}
+                        </p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <p class="text-sm text-gray-500">Total Interest Paid</p>
+                        <p class="text-lg font-semibold text-purple-600">
+                            ₹{{ "%.2f"|format(loan.payments|selectattr('payment_type', 'equalto', 'INTEREST')|sum(attribute='amount')) }}
+                        </p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <p class="text-sm text-gray-500">Remaining Principal</p>
+                        <p class="text-lg font-semibold text-green-600">
+                            ₹{{ "%.2f"|format(loan.amount - (loan.payments|selectattr('payment_type', 'equalto', 'PRINCIPAL')|sum(attribute='amount'))) }}
+                        </p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <p class="text-sm text-gray-500">Monthly EMI</p>
+                        <p class="text-lg font-semibold">₹{{ "%.2f"|format(loan.monthly_emi) }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment History -->
+            <div class="mb-8">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Payment History</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                <th class="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                                <th class="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                                <th class="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                <th class="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for payment in loan.payments %}
+                            <tr>
+                                <td class="px-2 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
+                                    {{ payment.payment_date.strftime('%Y-%m-%d') }}
+                                </td>
+                                <td class="px-2 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
+                                    ₹{{ "%.2f"|format(payment.amount) }}
+                                </td>
+                                <td class="px-2 sm:px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        {% if payment.payment_type == 'PRINCIPAL' %}
+                                            bg-blue-100 text-blue-800
+                                        {% elif payment.payment_type == 'INTEREST' %}
+                                            bg-purple-100 text-purple-800
+                                        {% else %}
+                                            bg-red-100 text-red-800
+                                        {% endif %}">
+                                        {{ payment.payment_type }}
+                                    </span>
+                                </td>
+                                <td class="px-2 sm:px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        {{ payment.status }}
+                                    </span>
+                                </td>
+                                <td class="px-2 sm:px-6 py-4 text-xs sm:text-sm text-gray-900">
+                                    {{ payment.notes or '-' }}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="px-2 sm:px-6 py-4 text-sm text-gray-500 text-center">
+                                    No payments recorded yet
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

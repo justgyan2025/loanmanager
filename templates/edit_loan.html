@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Loan{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-2xl mx-auto">
+        <div class="bg-white shadow-lg rounded-lg p-6">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6">Edit Loan</h2>
+            <form method="POST" action="{{ url_for('edit_loan', loan_id=loan.id) }}">
+                <div class="grid grid-cols-1 gap-6">
+                    <div>
+                        <label for="amount" class="block text-sm font-medium text-gray-700">Loan Amount (₹)</label>
+                        <input type="number" step="0.01" name="amount" id="amount" required
+                            value="{{ loan.amount }}"
+                            class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                            onchange="calculateEMI()">
+                    </div>
+                    
+                    <div>
+                        <label for="interest_rate" class="block text-sm font-medium text-gray-700">Interest Rate (%)</label>
+                        <input type="number" step="0.1" name="interest_rate" id="interest_rate" required
+                            value="{{ loan.interest_rate }}"
+                            class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                            onchange="calculateEMI()">
+                    </div>
+                    
+                    <div>
+                        <label for="term_months" class="block text-sm font-medium text-gray-700">Term (Months)</label>
+                        <input type="number" name="term_months" id="term_months" required
+                            value="{{ loan.term_months }}"
+                            class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                            onchange="calculateEMI()">
+                    </div>
+                    
+                    <div>
+                        <label for="monthly_emi" class="block text-sm font-medium text-gray-700">Monthly EMI ($)</label>
+                        <input type="number" step="0.01" name="monthly_emi" id="monthly_emi" 
+                            value="{{ loan.monthly_emi or '' }}" placeholder="0.00"
+                            class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                    </div>
+                    
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
+                        <select name="status" id="status" required
+                            class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            <option value="PENDING" {% if loan.status == 'PENDING' %}selected{% endif %}>Pending</option>
+                            <option value="ACTIVE" {% if loan.status == 'ACTIVE' %}selected{% endif %}>Active</option>
+                            <option value="COMPLETED" {% if loan.status == 'COMPLETED' %}selected{% endif %}>Completed</option>
+                            <option value="DEFAULTED" {% if loan.status == 'DEFAULTED' %}selected{% endif %}>Defaulted</option>
+                        </select>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Monthly EMI Breakdown</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="monthly_principal" class="block text-sm font-medium text-gray-700">Principal Component (₹)</label>
+                                <input type="number" step="0.01" name="monthly_principal" id="monthly_principal" readonly
+                                    class="mt-1 bg-gray-100 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                            </div>
+                            <div>
+                                <label for="monthly_interest" class="block text-sm font-medium text-gray-700">Interest Component (₹)</label>
+                                <input type="number" step="0.01" name="monthly_interest" id="monthly_interest" readonly
+                                    class="mt-1 bg-gray-100 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="monthly_emi" class="block text-sm font-medium text-gray-700">Total Monthly EMI (₹)</label>
+                                <input type="number" step="0.01" name="monthly_emi" id="monthly_emi" readonly
+                                    class="mt-1 bg-gray-100 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md font-semibold text-lg">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3">
+                        <a href="{{ url_for('borrower_details', borrower_id=loan.borrower_id) }}"
+                            class="btn-animate inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Cancel
+                        </a>
+                        <button type="submit"
+                            class="btn-animate inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Save Changes
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

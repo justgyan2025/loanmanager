@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Welcome Section -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">Welcome to Loan Manager</h1>
+        <p class="text-gray-600">Here's your loan portfolio overview</p>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Loans Card -->
+        <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-indigo-100 text-indigo-600">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <h2 class="text-gray-600 text-sm font-semibold">Total Loans</h2>
+                    <p class="text-3xl font-bold text-gray-800">{{ total_loans }}</p>
+                    <p class="text-sm text-gray-500 mt-1">Total Value: ₹{{ "%.2f"|format(total_amount) }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Loans Card -->
+        <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 text-green-600">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <h2 class="text-gray-600 text-sm font-semibold">Active Loans</h2>
+                    <p class="text-3xl font-bold text-gray-800">{{ active_loans }}</p>
+                    <p class="text-sm text-green-600 mt-1">In Progress</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Completed Loans Card -->
+        <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <h2 class="text-gray-600 text-sm font-semibold">Completed Loans</h2>
+                    <p class="text-3xl font-bold text-gray-800">{{ completed_loans }}</p>
+                    <p class="text-sm text-blue-600 mt-1">Successfully Closed</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Average Loan Amount Card -->
+        <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <h2 class="text-gray-600 text-sm font-semibold">Average Loan</h2>
+                    <p class="text-3xl font-bold text-gray-800">₹{{ "%.2f"|format(total_amount / total_loans if total_loans > 0 else 0) }}</p>
+                    <p class="text-sm text-purple-600 mt-1">Per Loan</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loan Analysis Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Recent Loans -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Recent Loans</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Borrower</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for loan in loans[-5:]|reverse %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-3 text-sm text-gray-900">#{{ loan.id }}</td>
+                            <td class="px-4 py-3 text-sm text-gray-900">{{ loan.borrower.first_name }} {{ loan.borrower.last_name }}</td>
+                            <td class="px-4 py-3 text-sm text-gray-900">₹{{ "%.2f"|format(loan.amount) }}</td>
+                            <td class="px-4 py-3">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                    {% if loan.status == 'ACTIVE' %}bg-green-100 text-green-800
+                                    {% elif loan.status == 'COMPLETED' %}bg-blue-100 text-blue-800
+                                    {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                    {{ loan.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Loan Status Distribution -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Loan Status Distribution</h3>
+            <div class="space-y-4">
+                <div class="flex items-center">
+                    <div class="w-full bg-gray-200 rounded-full h-4">
+                        {% set active_percent = (active_loans / total_loans * 100) if total_loans > 0 else 0 %}
+                        <div class="bg-green-600 h-4 rounded-full" style="width: {{ active_percent }}%"></div>
+                    </div>
+                    <span class="ml-4 text-sm text-gray-600">Active ({{ "%.1f"|format(active_percent) }}%)</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-full bg-gray-200 rounded-full h-4">
+                        {% set completed_percent = (completed_loans / total_loans * 100) if total_loans > 0 else 0 %}
+                        <div class="bg-blue-600 h-4 rounded-full" style="width: {{ completed_percent }}%"></div>
+                    </div>
+                    <span class="ml-4 text-sm text-gray-600">Completed ({{ "%.1f"|format(completed_percent) }}%)</span>
+                </div>
+
+                <!-- Principal Balance Progress -->
+                <div class="mt-8">
+                    <h4 class="text-lg font-medium text-gray-700 mb-2">Principal Balance Progress</h4>
+                    <div class="flex items-center mb-2">
+                        <div class="w-full bg-gray-200 rounded-full h-4">
+                            {% set total_principal = total_amount %}
+                            {% set total_paid = principal_paid %}
+                            {% set payment_percent = (total_paid / total_principal * 100) if total_principal > 0 else 0 %}
+                            <div class="bg-indigo-600 h-4 rounded-full" style="width: {{ payment_percent }}%"></div>
+                        </div>
+                        <span class="ml-4 text-sm text-gray-600">{{ "%.1f"|format(payment_percent) }}%</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mt-2">
+                        <div class="text-sm">
+                            <span class="text-gray-500">Total Principal:</span>
+                            <span class="font-medium text-gray-900">₹{{ "%.2f"|format(total_principal) }}</span>
+                        </div>
+                        <div class="text-sm">
+                            <span class="text-gray-500">Paid Amount:</span>
+                            <span class="font-medium text-indigo-600">₹{{ "%.2f"|format(total_paid) }}</span>
+                        </div>
+                        <div class="text-sm">
+                            <span class="text-gray-500">Remaining:</span>
+                            <span class="font-medium text-red-600">₹{{ "%.2f"|format(total_principal - total_paid) }}</span>
+                        </div>
+                        <div class="text-sm">
+                            <span class="text-gray-500">Progress:</span>
+                            <span class="font-medium text-green-600">{{ "%.1f"|format(payment_percent) }}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
