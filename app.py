@@ -55,10 +55,15 @@ def dashboard():
     active_loans = sum(1 for loan in loans if loan.status == 'ACTIVE')
     completed_loans = sum(1 for loan in loans if loan.status == 'COMPLETED')
     
-    # Calculate total principal paid
-    principal_paid = sum(
-        sum(payment.amount for payment in loan.payments if payment.payment_type == 'PRINCIPAL')
-        for loan in loans
+    # Get total borrowers
+    total_borrowers = Borrower.query.count()
+    
+    # Calculate EMI totals
+    total_emi_amount = sum(loan.monthly_emi * loan.term_months for loan in loans if loan.monthly_emi)
+    total_paid_amount = sum(
+        payment.amount 
+        for loan in loans 
+        for payment in loan.payments
     )
     
     return render_template('dashboard.html',
@@ -66,7 +71,9 @@ def dashboard():
                          total_amount=total_amount,
                          active_loans=active_loans,
                          completed_loans=completed_loans,
-                         principal_paid=principal_paid,
+                         total_borrowers=total_borrowers,
+                         total_emi_amount=total_emi_amount,
+                         total_paid_amount=total_paid_amount,
                          loans=loans)
 
 @app.route('/borrowers')
@@ -123,29 +130,37 @@ def export_borrower_loans(borrower_id):
     )
 
 @app.route('/borrowers/add', methods=['GET', 'POST'])
+@login_required
 def add_borrower():
     if request.method == 'POST':
         try:
-            # Get form data
-            first_name = request.form.get('first_name')
-            last_name = request.form.get('last_name')
-            address = request.form.get('address')
+            # Get form data and strip whitespace
+            first_name = request.form.get('first_name', '').strip()
+            last_name = request.form.get('last_name', '').strip()
+            address = request.form.get('address', '').strip()
+            
+            # Validate required fields
+            if not first_name or not last_name:
+                raise ValueError("First name and last name are required")
             
             # Create new borrower
-            new_borrower = Borrower()
-            new_borrower.first_name = first_name
-            new_borrower.last_name = last_name
-            new_borrower.address = address
-
+            new_borrower = Borrower(
+                first_name=first_name,
+                last_name=last_name,
+                address=address if address else None
+            )
+            
             db.session.add(new_borrower)
             db.session.commit()
+            
             flash('Borrower added successfully!', 'success')
             return redirect(url_for('borrowers'))
+            
         except Exception as e:
             db.session.rollback()
             print(f"Error adding borrower: {str(e)}")
-            flash('Error adding borrower. Please try again.', 'error')
-            return render_template('add_borrower.html', error=str(e))
+            flash('An error occurred while adding the borrower. Please try again.', 'error')
+            return render_template('add_borrower.html')
     
     return render_template('add_borrower.html')
 
@@ -488,8 +503,6 @@ def export_borrower_loans_csv(borrower_id, share_token):
     # Write Borrower Information
     cw.writerow(['BORROWER INFORMATION'])
     cw.writerow(['Name', f"{borrower.first_name} {borrower.last_name}"])
-    cw.writerow(['Email', borrower.email])
-    cw.writerow(['Phone', borrower.phone or 'Not provided'])
     cw.writerow(['Address', borrower.address or 'Not provided'])
     cw.writerow([])  # Empty row for spacing
     
@@ -582,8 +595,6 @@ def export_borrower_details_csv(borrower_id):
     # Write borrower details
     cw.writerow(['Borrower Details'])
     cw.writerow(['Name', f"{borrower.first_name} {borrower.last_name}"])
-    cw.writerow(['Email', borrower.email])
-    cw.writerow(['Phone', borrower.phone or 'Not provided'])
     cw.writerow(['Address', borrower.address or 'Not provided'])
     cw.writerow([])  # Empty row for spacing
     

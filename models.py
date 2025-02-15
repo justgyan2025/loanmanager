@@ -13,9 +13,7 @@ class Borrower(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), nullable=True)
-    phone = db.Column(db.String(20), nullable=True)
-    address = db.Column(db.Text)
+    address = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     loans = db.relationship('Loan', backref='borrower', lazy=True, cascade='all, delete-orphan')
 

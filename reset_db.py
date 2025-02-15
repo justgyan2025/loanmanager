@@ -11,7 +11,7 @@ from models import Admin, Borrower, Loan, Payment
 def reset_database():
     with app.app_context():
         try:
-            # Terminate all database connections first
+            # Drop all existing connections
             db.session.execute(text("""
                 SELECT pg_terminate_backend(pg_stat_activity.pid)
                 FROM pg_stat_activity
@@ -22,51 +22,34 @@ def reset_database():
             
             # Drop all tables
             print("Dropping all tables...")
-            db.session.execute(text('DROP TABLE IF EXISTS payment CASCADE'))
-            db.session.execute(text('DROP TABLE IF EXISTS loan CASCADE'))
-            db.session.execute(text('DROP TABLE IF EXISTS borrower CASCADE'))
-            db.session.execute(text('DROP TABLE IF EXISTS admin CASCADE'))
-            db.session.commit()
+            db.drop_all()
             
-            # Wait a moment
-            time.sleep(2)
-            
-            # Create all tables with new schema
+            # Create all tables
             print("Creating all tables...")
             db.create_all()
-            db.session.commit()  # Commit after create_all
             
             # Create admin user
             print("Creating admin user...")
-            # Check if admin exists first
-            existing_admin = Admin.query.filter_by(username='admin').first()
-            if not existing_admin:
-                admin = Admin(
-                    username='admin',
-                    password=generate_password_hash('admin123')
-                )
-                db.session.add(admin)
-                db.session.commit()
-            else:
-                print("Admin user already exists")
+            admin = Admin(
+                username='admin',
+                password=generate_password_hash('admin123')
+            )
+            db.session.add(admin)
+            db.session.commit()
             
-            # Verify all table structures
-            tables = ['admin', 'borrower', 'loan', 'payment']
-            for table in tables:
-                sql = text(f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '{table}'")
-                result = db.session.execute(sql)
-                print(f"\n{table.upper()} table columns:")
-                for row in result:
-                    print(f"- {row[0]}: {row[1]}")
+            # Verify the borrower table structure
+            sql = text("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'borrower'")
+            result = db.session.execute(sql)
+            print("\nBorrower table columns:")
+            for row in result:
+                print(f"- {row[0]}: {row[1]}")
             
             print("\nDatabase reset completed successfully!")
             
         except Exception as e:
             print(f"Error during database reset: {str(e)}")
             db.session.rollback()
-            raise  # Re-raise to see full error trace
-        finally:
-            db.session.close()  # Ensure session is closed
+            raise
 
 if __name__ == "__main__":
     reset_database()

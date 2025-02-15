@@ -7,42 +7,78 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="{{ url_for('static', filename='css/custom.css') }}" rel="stylesheet">
+    <style>
+        .nav-link {
+            position: relative;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: #4f46e5;
+            transition: width 0.3s ease-in-out;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        .nav-link.active::after {
+            width: 100%;
+        }
+    </style>
 </head>
 <body class="bg-gray-100">
     <div class="min-h-screen">
         {% if current_user.is_authenticated %}
-        <nav class="bg-gradient-to-r from-indigo-600 to-purple-600 shadow-lg">
+        <nav class="bg-white shadow-lg border-b border-gray-100">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between h-20">
+                <div class="flex justify-between h-16">
+                    <!-- Logo and Brand -->
                     <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <span class="text-white font-bold text-2xl tracking-wide">💰 Loan Manager</span>
+                        <div class="flex-shrink-0 flex items-center">
+                            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Ashish" class="h-10 w-10 rounded-full object-cover border-2 border-indigo-200">
+                            <span class="ml-3 text-xl font-bold text-gray-800 hover:text-indigo-600 transition-colors duration-200">Ashish</span>
                         </div>
-                        <div class="hidden md:block">
-                            <div class="ml-10 flex items-baseline space-x-4">
-                                {% if current_user.is_authenticated %}
-                                <a href="{{ url_for('dashboard') }}" class="text-white hover:bg-white/20 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200">
-                                    <i class="fas fa-chart-line mr-2"></i>Dashboard
-                                </a>
-                                <a href="{{ url_for('borrowers') }}" class="text-white hover:bg-white/20 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200">
-                                    <i class="fas fa-users mr-2"></i>Borrowers
-                                </a>
-                                <a href="{{ url_for('loans') }}" class="text-white hover:bg-white/20 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200">
-                                    <i class="fas fa-money-bill-wave mr-2"></i>Loans
-                                </a>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="hidden md:block">
-                        <div class="ml-4 flex items-center md:ml-6">
-                            {% if current_user.is_authenticated %}
-                            <a href="{{ url_for('logout') }}" class="text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200">
-                                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                        <!-- Desktop Navigation Links -->
+                        <div class="hidden md:flex md:items-center md:ml-10 space-x-4">
+                            <a href="{{ url_for('dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium {% if request.endpoint == 'dashboard' %}text-indigo-600 bg-indigo-50{% else %}text-gray-600 hover:text-indigo-600 hover:bg-indigo-50{% endif %} transition-all duration-200">
+                                Dashboard
                             </a>
-                            {% endif %}
+                            <a href="{{ url_for('loans') }}" class="px-3 py-2 rounded-md text-sm font-medium {% if request.endpoint == 'loans' %}text-indigo-600 bg-indigo-50{% else %}text-gray-600 hover:text-indigo-600 hover:bg-indigo-50{% endif %} transition-all duration-200">
+                                Loans
+                            </a>
+                            <a href="{{ url_for('borrowers') }}" class="px-3 py-2 rounded-md text-sm font-medium {% if request.endpoint == 'borrowers' %}text-indigo-600 bg-indigo-50{% else %}text-gray-600 hover:text-indigo-600 hover:bg-indigo-50{% endif %} transition-all duration-200">
+                                Borrowers
+                            </a>
                         </div>
                     </div>
+
+                    <!-- Mobile menu button -->
+                    <div class="flex items-center md:hidden">
+                        <button type="button" class="mobile-menu-button inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 transition-all duration-200">
+                            <span class="sr-only">Open main menu</span>
+                            <svg class="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile menu -->
+            <div class="hidden mobile-menu md:hidden">
+                <div class="px-2 pt-2 pb-3 space-y-1 bg-gray-50">
+                    <a href="{{ url_for('dashboard') }}" class="block px-3 py-2 rounded-md text-base font-medium {% if request.endpoint == 'dashboard' %}text-indigo-600 bg-indigo-50{% else %}text-gray-600 hover:text-indigo-600 hover:bg-indigo-50{% endif %} transition-all duration-200">
+                        Dashboard
+                    </a>
+                    <a href="{{ url_for('loans') }}" class="block px-3 py-2 rounded-md text-base font-medium {% if request.endpoint == 'loans' %}text-indigo-600 bg-indigo-50{% else %}text-gray-600 hover:text-indigo-600 hover:bg-indigo-50{% endif %} transition-all duration-200">
+                        Loans
+                    </a>
+                    <a href="{{ url_for('borrowers') }}" class="block px-3 py-2 rounded-md text-base font-medium {% if request.endpoint == 'borrowers' %}text-indigo-600 bg-indigo-50{% else %}text-gray-600 hover:text-indigo-600 hover:bg-indigo-50{% endif %} transition-all duration-200">
+                        Borrowers
+                    </a>
                 </div>
             </div>
         </nav>
@@ -141,5 +177,36 @@
             </div>
         </div>
     </div>
+    <!-- Add this JavaScript at the end of your body tag -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile menu toggle
+            const btn = document.querySelector(".mobile-menu-button");
+            const menu = document.querySelector(".mobile-menu");
+            const mobileMenuItems = menu.querySelectorAll('a');
+
+            btn.addEventListener("click", () => {
+                menu.classList.toggle("hidden");
+                // Animate menu button
+                btn.classList.toggle("text-indigo-600");
+            });
+
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!menu.contains(e.target) && !btn.contains(e.target) && !menu.classList.contains('hidden')) {
+                    menu.classList.add('hidden');
+                    btn.classList.remove("text-indigo-600");
+                }
+            });
+
+            // Close mobile menu when clicking a menu item
+            mobileMenuItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    menu.classList.add('hidden');
+                    btn.classList.remove("text-indigo-600");
+                });
+            });
+        });
+    </script>
 </body>
 </html> 
