@@ -709,7 +709,8 @@ def not_found_error(error):
 def before_request():
     try:
         db.session.ping()
-    except Exception:
+    except Exception as e:
+        app.logger.error(f'Database connection error: {e}')
         db.session.rollback()
 
 if __name__ == '__main__':

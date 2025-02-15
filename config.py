@@ -16,12 +16,19 @@ class Config:
     SQLALCHEMY_DATABASE_URI = database_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
-        'pool_size': 10,
-        'pool_recycle': 3600,
+        'pool_size': 5,
+        'max_overflow': 2,
+        'pool_recycle': 1800,
         'pool_pre_ping': True,
+        'pool_timeout': 30,
         'connect_args': {
             'connect_timeout': 10,
-            'application_name': 'loan_manager'
+            'application_name': 'loan_manager',
+            'sslmode': 'require',
+            'keepalives': 1,
+            'keepalives_idle': 30,
+            'keepalives_interval': 10,
+            'keepalives_count': 5
         }
     }
     
