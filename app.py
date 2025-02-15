@@ -9,9 +9,25 @@ import secrets
 from datetime import datetime
 import csv
 from io import StringIO
+import logging
+from logging.handlers import RotatingFileHandler
+import os
 
 app = Flask(__name__)
 app.config.from_object('config.Config')
+
+# Configure logging
+if not app.debug:
+    if not os.path.exists('logs'):
+        os.mkdir('logs')
+    file_handler = RotatingFileHandler('logs/loan_manager.log', maxBytes=10240, backupCount=10)
+    file_handler.setFormatter(logging.Formatter(
+        '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
+    ))
+    file_handler.setLevel(logging.INFO)
+    app.logger.addHandler(file_handler)
+    app.logger.setLevel(logging.INFO)
+    app.logger.info('Loan Manager startup')
 
 db.init_app(app)
 login_manager = LoginManager()
@@ -678,6 +694,23 @@ def export_all_loans_csv():
     output.headers["Content-Disposition"] = f"attachment; filename=all_loans_{datetime.now().strftime('%Y%m%d')}.csv"
     output.headers["Content-type"] = "text/csv"
     return output
+
+@app.errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    app.logger.error(f'Server Error: {error}')
+    return render_template('error.html', error=error), 500
+
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template('error.html', error=error), 404
+
+@app.before_request
+def before_request():
+    try:
+        db.session.ping()
+    except Exception:
+        db.session.rollback()
 
 if __name__ == '__main__':
     app.run(debug=True) 
